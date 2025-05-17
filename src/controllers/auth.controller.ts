@@ -1,17 +1,22 @@
-import { RegisterRequestBody } from "@/types/auth.types";
+import { registerUserService } from "@/services/auth.service";
+import { UserPayload } from "@/types/auth.types";
 import { Request, Response } from "express";
+import { DatabaseError } from "pg";
 
-export const register = (req: Request<{}, {}, RegisterRequestBody>, res: Response): void => {
+export const registerUser = async (req: Request<{}, {}, UserPayload>, res: Response): Promise<void> => {
   try {
-    const { fullName, email } = req.body;
+    const user = await registerUserService(req.body);
+
     res.status(201).json({
       message: "User registered successfully.",
-      user: {
-        fullName,
-        email,
-      },
+      user,
     });
-  } catch (error) {
-    res.status(400).json({ message: "Registration failed.", error });
+  } catch (error: unknown) {
+    if (error instanceof DatabaseError && error.code === "23505") {
+      res.status(400).json({ message: "Registration failed.", error: "Email already exists" });
+    } else {
+      console.error("Unexpected error during registration:", error);
+      res.status(500).json({ message: "Something went wrong. Please try again later" });
+    }
   }
 };

@@ -1,17 +1,20 @@
-import { configDotenv } from "dotenv";
-import express, { Application } from "express";
-import authRoutes from "./routes/auth.routes";
+import "@/config/env";
+import app from "@/app";
+import { initDB } from "@/config/db";
 
-configDotenv();
-
-const app: Application = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const startServer = async () => {
+  try {
+    await initDB();
 
-app.use("/api/auth", authRoutes);
+    app.listen(port, () => {
+      console.log(`Server is listening on port: ${port}`);
+    });
+  } catch (err: unknown) {
+    console.error("Failed to initialize DB:", err);
+    process.exit(1);
+  }
+};
 
-app.listen(port, () => {
-  console.log(`Server is listening on port: ${port}`);
-});
+startServer();

@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const registerSchema = z.object({
+export const registerUserSchema = z.object({
   fullName: z
     .string()
     .min(1, "Full name is required")
